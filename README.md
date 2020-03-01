@@ -1,4 +1,10 @@
 # golang-unit-test
 
 
-present
+## How to run
+
+
+    get golang.org/x/tools/cmd/present
+
+
+    present .
