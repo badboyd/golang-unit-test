@@ -7,4 +7,4 @@
     get golang.org/x/tools/cmd/present
 
 
-    present .
+    present -use_playground .
