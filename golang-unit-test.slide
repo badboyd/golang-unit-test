@@ -1,0 +1,151 @@
+Testing in Go
+2 Mar 2020
+
+badboyd
+https://github.com/badboyd
+
+* Purpose of this talk
+- Write unit test in golang
+
+* Why unit test?
+- Get computers to check our work
+- Run them automatically (every time we change something)
+- End up with a suite of tests describing the functionality
+- Bold and robust refactoring
+- We know if we break something by mistake
+- We know what we've broken
+- We all do manual testing - takes time and effort >> make less effort
+
+* Test
+
+.play -edit test1.go /START OMIT/,/END OMIT/
+
+* Table tests
+
+.play -edit test2.go /START OMIT/,/END OMIT/
+
+* Go test
+
+- go test - runs tests and gives you output
+- go test ./... - run tests for multi-package projects
+- go test -cover
+
+* T
+
+The `*testing.T` argument is used for error reporting:
+
+	t.Errorf("got bar = %v, want %v", got, want)
+	t.Fatalf("Frobnicate(%v) returned error: %v", arg, err)
+	t.Logf("iteration %v", i)
+
+And enabling parallel tests:
+
+	t.Parallel()
+
+And controlling whether a test runs at all:
+
+	if runtime.GOARCH == "arm" {
+		t.Skip("this doesn't work on ARM")
+	}
+
+
+* Test coverage
+
+The `go` tool can report test coverage statistics.
+
+	$ go test -cover
+	PASS
+	coverage: 96.4% of statements
+	ok  	strings	0.692s
+
+The `go` tool can generate coverage profiles that may be intepreted by the `cover` tool.
+
+	$ go test -coverprofile=cover.out
+	$ go tool cover -func=cover.out
+	strings/reader.go:    Len             66.7%
+	strings/strings.go:   TrimSuffix     100.0%
+	... many lines omitted ...
+	strings/strings.go:   Replace        100.0%
+	strings/strings.go:   EqualFold      100.0%
+	total:                (statements)    96.4%
+
+* Coverage visualization
+
+	$ go tool cover -html=cover.out
+
+.image cover.png
+
+* Setup and teardown
+.play -edit setupteardown.go
+
+
+* Test Main
+.play -edit testmain.go
+
+
+* Testing HTTP clients and servers
+
+The `net/http/httptest` package provides helpers for testing code that makes or serves HTTP requests.
+
+
+* httptest.Server
+
+An `httptest.Server` listens on a system-chosen port on the local loopback interface, for use in end-to-end HTTP tests.
+
+	type Server struct {
+		URL      string // base URL of form http://ipaddr:port with no trailing slash
+		Listener net.Listener
+
+		// TLS is the optional TLS configuration, populated with a new config
+		// after TLS is started. If set on an unstarted server before StartTLS
+		// is called, existing fields are copied into the new config.
+		TLS *tls.Config
+
+		// Config may be changed after calling NewUnstartedServer and
+		// before Start or StartTLS.
+		Config *http.Server
+	}
+
+	func NewServer(handler http.Handler) *Server
+
+	func (*Server) Close() error
+
+* httptest.Server in action
+
+This code sets up a temporary HTTP server that serves a simple "Hello" response.
+
+.play httpserver.go /START OMIT/,/STOP OMIT/
+
+
+* httptest.ResponseRecorder
+
+`httptest.ResponseRecorder` is an implementation of `http.ResponseWriter` that records its mutations for later inspection in tests.
+
+	type ResponseRecorder struct {
+		Code      int           // the HTTP response code from WriteHeader
+		HeaderMap http.Header   // the HTTP response headers
+		Body      *bytes.Buffer // if non-nil, the bytes.Buffer to append written data to
+		Flushed   bool
+	}
+
+* httptest.ResponseRecorder in action
+
+By passing a `ResponseRecorder` into an HTTP handler we can inspect the generated response.
+
+.play httprecorder.go /START OMIT/,/STOP OMIT/
+
+* FE
+.play table_test2.go /START OMIT/,/END OMIT/
+
+* Race Detection
+
+A data race occurs when two goroutines access the same variable concurrently and at least one of the accesses is a write.
+
+To help diagnose such bugs, Go includes a built-in data race detector.
+
+Pass the `-race` flag to the go tool to enable the race detector:
+
+	$ go test -race mypkg    // to test the package
+	$ go run -race mysrc.go  // to run the source file
+	$ go build -race mycmd   // to build the command
+	$ go install -race mypkg // to install the package
