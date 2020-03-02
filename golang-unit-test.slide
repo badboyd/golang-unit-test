@@ -134,7 +134,7 @@ By passing a `ResponseRecorder` into an HTTP handler we can inspect the generate
 
 .play httprecorder.go /START OMIT/,/STOP OMIT/
 
-* FE
+* In Action
 .play table_test2.go /START OMIT/,/END OMIT/
 
 * Race Detection
@@ -149,3 +149,68 @@ Pass the `-race` flag to the go tool to enable the race detector:
 	$ go run -race mysrc.go  // to run the source file
 	$ go build -race mycmd   // to build the command
 	$ go install -race mypkg // to install the package
+
+* Fixtures
+- Fixtures allow us to reliably and repeatably create the state that our code relies on, without worrying about the details
+- golang will ignore all the files in testdata
+
+.play -edit fixtures.go /START OMIT/,/END OMIT/
+
+* Golden
+- Golden files contain the expected output of a test
+- Read the contents of the golden file and compare it to the output of the unit under test
+
+.play -edit golden.go /START OMIT/,/END OMIT/
+
+* Golden files
+- Empty
+	| Title         | Author        | Publisher |  Pages  |  ISBN  |  Price  |
+	| ------------- | ------------- | --------- | ------- | ------ | ------- |
+
+- Inventory
+	| Title         | Author        | Publisher |  Pages  |  ISBN  |  Price  |
+	| ------------- | ------------- | --------- | ------- | ------ | ------- |
+	| The Da Vinci Code | Dan Brown | Corgi | 592 | 978-0552161275 | 7 |
+	| American on Purpose | Craig Ferguson | Harper Collins | 288 | 978-0061959158 | 19 |
+
+* Golden(cont)
+
+.play golden2.go /START OMIT/,/END OMIT/
+
+* Golden(cont)
+	var (
+		update = flag.Bool("update", false, "update the golden files of this test")
+	)
+
+
+	func goldenValue(t *testing.T, goldenFile string, actual string, update bool) string {
+		t.Helper()
+		goldenPath := "testdata/" + goldenFile + ".golden"
+
+		f, _ := os.OpenFile(goldenPath, os.O_RDWR, 0644)
+		defer f.Close()
+
+		if update {
+			_, err := f.WriteString(actual)
+			if err != nil {
+				t.Fatalf("Error writing to file %s: %s", goldenPath, err)
+			}
+
+			return actual
+		}
+
+		content, err := ioutil.ReadAll(f)
+		if err != nil {
+			t.Fatalf("Error opening file %s: %s", goldenPath, err)
+		}
+		return string(content)
+	}
+
+* Golden(cont)
+
+.play golden3.go /START OMIT/,/END OMIT/
+
+* Mock
+- Programming again interfaces not implementation
+
+* Fuzzing
