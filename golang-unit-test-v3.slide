@@ -213,4 +213,19 @@ Pass the `-race` flag to the go tool to enable the race detector:
 * Mock
 - Programming again interfaces not implementation
 
+For example, if you're writing a file format parser, don't write a function like this:
+
+		func Parse(f *os.File) error
+
+instead, write functions that take the interface you need:
+
+	func Parse(r io.Reader) error
+
+(An `*os.File` implements `io.Reader`, as does `bytes.Buffer` or `strings.Reader`.)
+
+
 * Fuzzing
+- Fuzzing is a testing technique that loads our program with random data
+- https://github.com/google/gofuzz
+
+.play -edit fuzzing.go /START OMIT/,/END OMIT/

@@ -10,8 +10,6 @@ func Add(a, b int) int {
 	return a + b
 }
 
-// END OMIT
-
 // func TestAdd(t *testing.T) {
 // 	result := add(36, 6)
 // 	if result != 42 {
@@ -19,9 +17,10 @@ func Add(a, b int) int {
 // 	}
 // }
 
+// END OMIT
+
 func main() {
 	var tests []testing.InternalTest
 	tests = append(tests, testing.InternalTest{Name: "TestAdd", F: TestAdd})
-	testing.Verbose()
 	testing.Main(func(pat, str string) (bool, error) { return true, nil }, tests, nil, nil)
 }
