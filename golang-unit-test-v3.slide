@@ -211,7 +211,7 @@ Pass the `-race` flag to the go tool to enable the race detector:
 .play golden3.go /START OMIT/,/END OMIT/
 
 * Mock
-- Programming again interfaces not implementation
+- Programming against interfaces not implementation
 
 For example, if you're writing a file format parser, don't write a function like this:
 

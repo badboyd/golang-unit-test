@@ -9,15 +9,15 @@ import (
 )
 
 func Add(a, b int) int {
-	return a + b
+	return a / b
 }
 
 func TestAdd(t *testing.T) {
-	for i := 0; i < 100; i++ {
+	for i := 0; i < 10000; i++ {
 		var a, b int
 
-		fuzz.New().Fuzz(&a)
-		fuzz.New().Fuzz(&b)
+		fuzz.New().NumElements(0, 10).Fuzz(&a)
+		fuzz.New().NumElements(0, 10).Fuzz(&b)
 
 		t.Logf("Add %d and %d", a, b)
 		Add(a, b)
